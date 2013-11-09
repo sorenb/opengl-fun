@@ -22,19 +22,22 @@ GLuint vPosition = 0;
 
 const GLuint NumVertices = 6;
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Create program
-//  in openGL 4 one or more shader objects is linked into a program object.
-//  this function from arcsynthesis takes shaders stuffed in an array (shaderList)
-//  and attaches them to a program
-//  
-//  arcsynthesis on not using programs:
-//  OpenGL does have, in its compatibility profile, default rendering state
-//  that takes over when a program is not being used. We will not be using this,
-//  and you are encouraged to avoid its use as well.
-//
-//////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Create program
+ *
+ * in openGL 4 one or more shader objects is linked into a program object.
+ * this function from arcsynthesis takes shaders stuffed in an array (shaderList)
+ * and attaches them to a program
+ *  
+ * arcsynthesis on not using programs:
+ * OpenGL does have, in its compatibility profile, default rendering state
+ * that takes over when a program is not being used. We will not be using this,
+ * and you are encouraged to avoid its use as well.
+ *
+ * @param shaderlist 
+ * @return an opengl program object
+ */
 
 GLuint CreateProgram(const std::vector<GLuint> &shaderList)
 {
