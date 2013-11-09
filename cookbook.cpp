@@ -1,5 +1,6 @@
 // compile with the c++ compiler:   g++ -g -lGL -lGLU -lglut triangles.cpp -o triangles `pkg-config --libs --cflags glu glew gl`
 // or the c compiler:               gcc -g -lstdc++ -lGL -lGLU -lglut triangles.cpp -o triangles `pkg-config --libs --cflags glu glew gl`
+// if these give the error about undefined reference to glutInit, try setting the -lglut and maybe all l's at the end instead
 
 #include <iostream>
 #include <cstdlib>
@@ -8,7 +9,6 @@
 #include <glm/glm.hpp>   // this can be downloaded from glm.g-truc.net and put in your compilers includepath in e.g. ~/.profile with C_INCLUDE_PATH for gcc and CPLUS_INCLUDE_PATH for g++
 #include <vector>
 #include <algorithm> 
-#include <GL/freeglut.h>
 #include <GL/freeglut.h>
 
 #define GLEW_STATIC
