@@ -5,12 +5,12 @@
  * or the c compiler:               gcc -g -lstdc++ -lGL -lGLU -lglut triangles.cpp -o triangles `pkg-config --libs --cflags glu glew gl`
  *
  * if these give the error about undefined reference to glutInit, try setting the -lglut and maybe all l's at the end instead
- * TODO:
- * - Make everything OOP
- * - Write a loader for the shaders, so they can be separate files
+ * @todo Make everything OOP
+ * @todo Write a loader for the shaders, so they can be separate files
  */
 
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include <GL/glew.h>
 #include <stdio.h>
@@ -30,6 +30,99 @@ GLuint vPosition = 0;
 
 const GLuint NumVertices = 6;
 
+/**
+ * cf. http://www.opengl.org/sdk/docs/tutorials/ClockworkCoders/loading.php
+ *
+ * @param  Description of method's or function's input parameter
+ * @return Description of the return value
+ */
+
+unsigned long getFileLength(ifstream& file)
+{
+    if(!file.good()) return 0;
+    
+    unsigned long pos=file.tellg();
+    file.seekg(0,ios::end);
+    unsigned long len = file.tellg();
+    file.seekg(ios::beg);
+    
+    return len;
+}
+
+/**
+ * loadshader
+ *
+ * The idea behind passing a pointer to a pointer is to have the return value
+ * be an error or success int while at the same time being able to return
+ * a complex type e.g. an object or here, a char array (a shader as a string)
+ * almost like a callback (although we are not passing a function).
+ * Since this is a generic function to be reused for many different shaders
+ * we cannot pass a simple pointer since that would point to one specific
+ * address in memory. Instead we pass a pointer to a pointer, so we can
+ * dereference it inside the function and get a pointer (to our complex type),
+ * load stuff into the complex type and return a success or error value
+ * while at the same time - in the calling function - retrieve the actual 
+ * return value i.e. what was put in the complex type.
+
+GLchar** fragSource
+GLchar** vertSource
+loadshader(shader.vert, vertSource, unsigned long* len)
+CreateShader(GL_VERTEX_SHADER, (std::string*)vertSource);
+
+ * 
+ * @param[in]   filename      the file holding the shader src to load
+ * @param[out]  ShaderSource  a pointer to the pointer to  
+ * @param[in]   len           the length of the string in the shader file
+ * @return a success or error int 
+ */
+
+int loadshader(char* filename, GLchar** ShaderSource, unsigned long* len)
+{
+   ifstream file;
+    
+   // I guess everything between this file.open() and the file.close() later, is meant to be about the 
+   // file in question, else why does file.close() not have the filehandle as it's argument??  
+   file.open(filename, ios::in); // opens as ASCII! see http://www.cplusplus.com/doc/tutorial/files/
+   if(!file) return -1;
+    
+   len = getFileLength(file);                   // calls the small function above, seeking to beginning and end of file to get length
+    
+   if (len==0) return -2;                       // Error: Empty File if length is zero 
+    
+   *ShaderSource = (GLubyte*) new char[len+1];  // instantiate new char array w. the length of the file string and cast to GLubyte pointer
+   if (*ShaderSource == 0) return -3;           // can't reserve memory
+   
+    // len isn't always strlen cause some characters are stripped in ascii read...
+    // it is important to 0-terminate the real length later, len is just max possible value... 
+   *ShaderSource[len] = 0; 
+
+   // loop every char in file and load to string i.e char array ShaderSource until eof
+   unsigned int i=0;
+   while (file.good())
+   {
+       *ShaderSource[i] = file.get();           // get character from file.
+       if (!file.eof())
+        i++;
+   }
+   
+   // the 'actual' return value: 
+   // We are not returning the ShaderSource via 'return' but simply updating *ShaderSource that was passed
+   // into this function via a double pointer.   
+   *ShaderSource[i] = 0;                        // 0-terminate it at the correct position
+                                                // because of the loop i now contains the position of
+                                                // one position beyond the last char i.e. the position of
+                                                // the eof char in the file, so replace it with 0
+   file.close();
+      
+   return 0;                                    // If we get to here we can assume success and return 'no error'
+}
+
+int unloadshader(GLubyte** ShaderSource)
+{
+   if (*ShaderSource != 0)
+     delete[] *ShaderSource;
+   *ShaderSource = 0;
+}
 
 /**
  * Create program
@@ -101,11 +194,13 @@ const std::string strFragmentShader(
 );
 
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// CreateShader
-//
-//////////////////////////////////////////////////////////////////////////////
+/**
+ * CreateShader 
+ *
+ * @param  ... 
+ * @param  ...
+ * @return a shader object(?)
+ */
 
 GLuint CreateShader(GLenum eShaderType, const std::string &strShaderFile)
 {
